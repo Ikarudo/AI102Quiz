@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI-102 Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f3ee;--surface:#faf9f6;--card:#ffffff;
+  --border:#e5e2da;--border2:#d4d0c8;
+  --muted:#9e9a90;--body:#4a4540;--ink:#1e1b16;
+  --accent:#c0472a;--blue:#2457a4;
+  --green:#26754a;--red:#b03030;--amber:#a06820;
+  --r:8px;--r-lg:14px;
+  --sh:0 1px 3px rgba(30,27,22,.06),0 4px 16px rgba(30,27,22,.08);
+}
+[data-theme=dark]{
+  --bg:#181510;--surface:#201d18;--card:#272320;
+  --border:#363028;--border2:#45403a;
+  --muted:#857f76;--body:#bab4aa;--ink:#ede8e0;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"DM Sans",sans-serif;font-size:14px;line-height:1.6;background:var(--bg);color:var(--body);min-height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* LOGIN */
+#loginScreen{
+  position:fixed;inset:0;z-index:999;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+}
+.login-box{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:18px;padding:40px 36px;width:360px;
+  box-shadow:var(--sh);text-align:center;
+}
+.login-title{
+  font-family:"Fraunces",Georgia,serif;
+  font-size:28px;font-weight:300;color:var(--ink);margin-bottom:4px;
+}
+.login-sub{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:28px}
+.login-input{
+  width:100%;padding:11px 14px;
+  border:1.5px solid var(--border);border-radius:9px;
+  font-size:14px;font-family:"DM Sans",sans-serif;
+  background:var(--bg);color:var(--ink);
+  outline:none;margin-bottom:12px;transition:border-color .15s;
+}
+.login-input:focus{border-color:var(--accent)}
+.login-btn{
+  width:100%;padding:12px;border:none;border-radius:9px;
+  background:var(--ink);color:var(--bg);
+  font-family:"DM Sans",sans-serif;font-size:14px;font-weight:600;
+  cursor:pointer;transition:background .15s;
+}
+.login-btn:hover{background:var(--accent)}
+.login-err{font-size:12px;color:var(--red);margin-top:8px}
+
+/* HEADER */
+header{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 32px;height:52px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+}
+.hdr-logo{font-family:"Fraunces",Georgia,serif;font-size:20px;font-weight:300;color:var(--ink)}
+.hdr-logo em{font-style:italic;color:var(--accent)}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.hdr-tag{font-family:"DM Mono",monospace;font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(192,71,42,.1);color:var(--accent)}
+.icon-btn{
+  width:32px;height:32px;border-radius:var(--r);border:1px solid var(--border);
+  background:transparent;color:var(--muted);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;
+}
+.icon-btn:hover{color:var(--ink);border-color:var(--ink)}
+.icon-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* MAIN */
+.page{max-width:1100px;margin:0 auto;padding:32px}
+
+/* STAT CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r-lg);padding:20px 22px;box-shadow:var(--sh);
+}
+.sc-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.sc-val{font-family:"Fraunces",Georgia,serif;font-size:36px;font-weight:300;color:var(--ink);line-height:1}
+.sc-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.sc-val.green{color:var(--green)}
+.sc-val.red{color:var(--red)}
+.sc-val.blue{color:var(--blue)}
+
+/* SECTION */
+.section{margin-bottom:32px}
+.section-title{
+  font-family:"Fraunces",Georgia,serif;font-size:20px;font-weight:300;
+  color:var(--ink);letter-spacing:-.3px;margin-bottom:16px;
+}
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r-lg);box-shadow:var(--sh);overflow:hidden;
+}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse}
+th{
+  font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;
+  color:var(--muted);padding:10px 16px;text-align:left;
+  border-bottom:1px solid var(--border);background:var(--surface);
+}
+td{padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg)}
+.mono{font-family:"DM Mono",monospace;font-size:12px}
+.badge{
+  display:inline-block;font-family:"DM Mono",monospace;
+  font-size:9px;padding:2px 7px;border-radius:4px;
+}
+.badge-mc{background:rgba(36,87,164,.1);color:var(--blue)}
+.badge-hs{background:rgba(192,71,42,.1);color:var(--accent)}
+.badge-dd{background:rgba(160,104,32,.1);color:var(--amber)}
+
+/* PROGRESS BAR */
+.pbar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;min-width:80px}
+.pbar-fill{height:100%;border-radius:3px;transition:width .3s}
+.pbar-green{background:var(--green)}
+.pbar-red{background:var(--red)}
+.pbar-amber{background:var(--amber)}
+
+/* TWO COLS */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+
+/* USERS TABLE */
+.user-avatar{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--ink);color:var(--bg);
+  font-size:11px;font-weight:600;
+  display:inline-flex;align-items:center;justify-content:center;
+  margin-right:8px;flex-shrink:0;vertical-align:middle;
+}
+
+/* REFRESH BTN */
+.refresh-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:var(--r);
+  border:1px solid var(--border);background:transparent;
+  color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;
+  transition:all .15s;font-family:"DM Sans",sans-serif;
+}
+.refresh-btn:hover{border-color:var(--ink);color:var(--ink)}
+.refresh-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.refresh-btn.spinning svg{animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* EMPTY */
+.empty-row td{text-align:center;color:var(--muted);padding:32px;font-style:italic}
+
+/* LOADING SKELETON */
+.skeleton{
+  background:linear-gradient(90deg,var(--border) 25%,var(--surface) 50%,var(--border) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.2s infinite;
+  border-radius:4px;height:16px;
+}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* CHART BAR */
+.chart-wrap{padding:20px 22px}
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:120px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar{width:100%;background:var(--accent);border-radius:4px 4px 0 0;transition:height .4s ease;min-height:2px;opacity:.8}
+.bar:hover{opacity:1}
+.bar-lbl{font-family:"DM Mono",monospace;font-size:9px;color:var(--muted);text-align:center}
+
+/* ACCURACY RING */
+.ring-wrap{display:flex;align-items:center;gap:20px;padding:20px 22px}
+.ring{position:relative;width:80px;height:80px;flex-shrink:0}
+.ring svg{transform:rotate(-90deg)}
+.ring-pct{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:"Fraunces",Georgia,serif;font-size:18px;font-weight:300;color:var(--ink);
+}
+.ring-info{flex:1}
+.ring-title{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.ring-sub{font-size:12px;color:var(--muted)}
+
+/* last updated */
+.last-upd{font-family:"DM Mono",monospace;font-size:10px;color:var(--muted);padding:0 0 12px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-title">AI<em>—</em>102</div>
+    <div class="login-sub">Admin Dashboard</div>
+    <input type="password" id="pwInput" class="login-input" placeholder="Admin password"
+      onkeydown="if(event.key==='Enter')tryLogin()">
+    <button class="login-btn" onclick="tryLogin()">Enter</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until login) -->
+<div id="app" style="display:none">
+  <header>
+    <div class="hdr-logo">AI<em>—</em>102 <span style="font-family:'DM Sans';font-size:13px;font-weight:400;color:var(--muted)">/ Admin</span></div>
+    <div class="hdr-right">
+      <span class="hdr-tag">ADMIN</span>
+      <button class="refresh-btn" id="refreshBtn" onclick="loadAll()">
+        <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.26"/></svg>
+        Refresh
+      </button>
+      <button class="icon-btn" onclick="toggleTheme()">
+        <svg id="thIco" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <a href="index.html" style="text-decoration:none">
+        <button class="icon-btn" title="Go to quiz">
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </button>
+      </a>
+    </div>
+  </header>
+
+  <div class="page">
+    <div class="last-upd" id="lastUpd">Loading...</div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="sc-label">Total Users</div>
+        <div class="sc-val blue" id="stUsers">—</div>
+        <div class="sc-sub" id="stUsersSub">registered sessions</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-label">Total Attempts</div>
+        <div class="sc-val" id="stAttempts">—</div>
+        <div class="sc-sub">questions answered</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-label">Overall Accuracy</div>
+        <div class="sc-val green" id="stAccuracy">—</div>
+        <div class="sc-sub" id="stAccSub">correct answers</div>
+      </div>
+      <div class="stat-card">
+        <div class="sc-label">Total Sessions</div>
+        <div class="sc-val" id="stSessions">—</div>
+        <div class="sc-sub">quiz opens</div>
+      </div>
+    </div>
+
+    <!-- TOP ROW -->
+    <div class="two-col" style="margin-bottom:32px">
+      <!-- Accuracy ring -->
+      <div class="card">
+        <div style="padding:16px 22px 0;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)">Set Usage</div>
+        <div class="ring-wrap" id="setUsage">
+          <div style="color:var(--muted);font-size:13px">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Question type breakdown -->
+      <div class="card">
+        <div style="padding:16px 22px 0;font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)">Accuracy by Type</div>
+        <div id="typeBreakdown" style="padding:14px 22px">
+          <div style="color:var(--muted);font-size:13px">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HARDEST QUESTIONS -->
+    <div class="section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="section-title">Hardest Questions</div>
+        <div style="font-size:11px;color:var(--muted)">min 3 attempts</div>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr>
+            <th>Q#</th><th>Type</th><th>Attempts</th><th>Accuracy</th><th></th>
+          </tr></thead>
+          <tbody id="hardestTable">
+            <tr class="empty-row"><td colspan="5">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- USERS -->
+    <div class="section">
+      <div class="section-title">Recent Users</div>
+      <div class="card">
+        <table>
+          <thead><tr>
+            <th>Name</th><th>Sessions</th><th>Last Seen</th>
+          </tr></thead>
+          <tbody id="usersTable">
+            <tr class="empty-row"><td colspan="3">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ALL QUESTION STATS -->
+    <div class="section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="section-title">All Questions</div>
+        <div style="display:flex;gap:6px">
+          <button class="refresh-btn" onclick="sortTable('attempts')" id="sortAttempts">By Attempts</button>
+          <button class="refresh-btn" onclick="sortTable('accuracy')" id="sortAccuracy">By Accuracy</button>
+        </div>
+      </div>
+      <div class="card">
+        <table>
+          <thead><tr>
+            <th>Q#</th><th>Type</th><th>Attempts</th><th>Correct</th><th>Accuracy</th><th></th>
+          </tr></thead>
+          <tbody id="allQTable">
+            <tr class="empty-row"><td colspan="6">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="firebase-config.js"></script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, doc, getDoc, getDocs, query, orderBy, limit }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+let db;
+let allQData = [];
+let currentSort = 'attempts';
+
+// ── LOGIN ─────────────────────────────────────────────────────
+window.tryLogin = function() {
+  const pw = document.getElementById('pwInput').value;
+  if (pw === ADMIN_PASSWORD) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    initFirebase();
+  } else {
+    document.getElementById('loginErr').textContent = 'Incorrect password';
+    document.getElementById('pwInput').value = '';
+  }
+};
+document.getElementById('pwInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') window.tryLogin();
+});
+
+// ── FIREBASE ──────────────────────────────────────────────────
+function initFirebase() {
+  try {
+    const app = initializeApp(FIREBASE_CONFIG);
+    db = getFirestore(app);
+    loadAll();
+  } catch(e) {
+    console.error('Firebase failed:', e);
+    showError('Firebase connection failed. Check firebase-config.js');
+  }
+}
+
+// ── LOAD ALL DATA ─────────────────────────────────────────────
+window.loadAll = async function() {
+  const btn = document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+
+  try {
+    await Promise.all([
+      loadGlobalStats(),
+      loadUsers(),
+      loadQuestions()
+    ]);
+    document.getElementById('lastUpd').textContent =
+      'Last updated: ' + new Date().toLocaleTimeString();
+  } catch(e) {
+    console.error(e);
+    showError('Failed to load data: ' + e.message);
+  } finally {
+    btn.classList.remove('spinning');
+  }
+};
+
+// ── GLOBAL STATS ──────────────────────────────────────────────
+async function loadGlobalStats() {
+  const [globalDoc, setsDoc, usersSnap] = await Promise.all([
+    getDoc(doc(db, 'stats', 'global')),
+    getDoc(doc(db, 'stats', 'sets')),
+    getDocs(collection(db, 'users'))
+  ]);
+
+  const g = globalDoc.data() || {};
+  const s = setsDoc.data() || {};
+
+  const totalUsers = usersSnap.size;
+  const totalAttempts = g.totalAttempts || 0;
+  const totalCorrect = g.totalCorrect || 0;
+  const totalSessions = g.totalSessions || 0;
+  const accuracy = totalAttempts > 0 ? Math.round(totalCorrect / totalAttempts * 100) : 0;
+
+  document.getElementById('stUsers').textContent = fmt(totalUsers);
+  document.getElementById('stAttempts').textContent = fmt(totalAttempts);
+  document.getElementById('stAccuracy').textContent = accuracy + '%';
+  document.getElementById('stAccSub').textContent = `${fmt(totalCorrect)} of ${fmt(totalAttempts)} correct`;
+  document.getElementById('stSessions').textContent = fmt(totalSessions);
+
+  // Set usage bars
+  const setData = [
+    { label: 'Set 1', val: s.set1 || 0 },
+    { label: 'Set 2', val: s.set2 || 0 },
+    { label: 'Set 3', val: s.set3 || 0 }
+  ];
+  const maxSet = Math.max(...setData.map(x=>x.val), 1);
+  document.getElementById('setUsage').innerHTML = setData.map(s => `
+    <div style="flex:1;text-align:center;padding:0 8px">
+      <div style="font-family:'Fraunces',Georgia,serif;font-size:28px;font-weight:300;color:var(--ink)">${fmt(s.val)}</div>
+      <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:4px 0 8px">${s.label}</div>
+      <div class="pbar"><div class="pbar-fill pbar-green" style="width:${Math.round(s.val/maxSet*100)}%"></div></div>
+    </div>
+  `).join('');
+  document.getElementById('setUsage').style.cssText = 'display:flex;gap:0;padding:16px 22px 20px;';
+}
+
+// ── USERS ─────────────────────────────────────────────────────
+async function loadUsers() {
+  const snap = await getDocs(query(collection(db, 'users'), orderBy('lastSeen', 'desc'), limit(20)));
+  const tbody = document.getElementById('usersTable');
+
+  if (snap.empty) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="3">No users yet</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = snap.docs.map(d => {
+    const u = d.data();
+    const initial = (u.name||'?')[0].toUpperCase();
+    const lastSeen = u.lastSeen?.toDate ? timeAgo(u.lastSeen.toDate()) : '—';
+    return `<tr>
+      <td><span class="user-avatar">${initial}</span>${esc(u.name||'Anonymous')}</td>
+      <td class="mono">${u.sessions||1}</td>
+      <td class="mono" style="color:var(--muted)">${lastSeen}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── QUESTIONS ─────────────────────────────────────────────────
+async function loadQuestions() {
+  const snap = await getDocs(collection(db, 'questions'));
+  allQData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderQuestions();
+  renderTypeBreakdown();
+  renderHardest();
+}
+
+function renderQuestions() {
+  const sorted = [...allQData].sort((a,b) => {
+    if (currentSort === 'accuracy') {
+      const accA = a.attempts > 0 ? (a.correct||0)/a.attempts : 1;
+      const accB = b.attempts > 0 ? (b.correct||0)/b.attempts : 1;
+      return accA - accB;
+    }
+    return (b.attempts||0) - (a.attempts||0);
+  });
+
+  const tbody = document.getElementById('allQTable');
+  if (!sorted.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="6">No question data yet</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = sorted.slice(0, 50).map(q => {
+    const attempts = q.attempts || 0;
+    const correct = q.correct || 0;
+    const acc = attempts > 0 ? Math.round(correct/attempts*100) : null;
+    const barColor = acc === null ? 'pbar-amber' : acc >= 60 ? 'pbar-green' : acc >= 40 ? 'pbar-amber' : 'pbar-red';
+    const typeLabel = q.qtype === 'multiple_choice' ? 'mc' : q.qtype === 'drag_drop' ? 'dd' : q.qtype === 'hotspot' ? 'hs' : q.qtype||'?';
+    const badgeCls = typeLabel === 'mc' ? 'badge-mc' : typeLabel === 'hs' ? 'badge-hs' : 'badge-dd';
+    return `<tr>
+      <td class="mono" style="font-weight:500;color:var(--ink)">Q${q.qnum||q.id}</td>
+      <td><span class="badge ${badgeCls}">${typeLabel.toUpperCase()}</span></td>
+      <td class="mono">${fmt(attempts)}</td>
+      <td class="mono">${fmt(correct)}</td>
+      <td style="min-width:120px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="pbar" style="flex:1"><div class="pbar-fill ${barColor}" style="width:${acc||0}%"></div></div>
+          <span class="mono" style="color:var(--muted);min-width:30px">${acc !== null ? acc+'%' : '—'}</span>
+        </div>
+      </td>
+      <td style="color:var(--muted);font-size:12px">${acc !== null && acc < 40 ? '⚠ Hard' : ''}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderTypeBreakdown() {
+  const types = {};
+  for (const q of allQData) {
+    const t = q.qtype || 'unknown';
+    if (!types[t]) types[t] = { attempts:0, correct:0 };
+    types[t].attempts += q.attempts||0;
+    types[t].correct  += q.correct||0;
+  }
+  const el = document.getElementById('typeBreakdown');
+  const rows = Object.entries(types).map(([t,d]) => {
+    const acc = d.attempts > 0 ? Math.round(d.correct/d.attempts*100) : 0;
+    const label = t === 'multiple_choice' ? 'Multiple Choice' : t === 'drag_drop' ? 'Drag & Drop' : t === 'hotspot' ? 'Hotspot' : t;
+    const barColor = acc >= 60 ? 'pbar-green' : acc >= 40 ? 'pbar-amber' : 'pbar-red';
+    return `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:12px;font-weight:500;color:var(--ink)">${label}</span>
+        <span class="mono" style="font-size:11px;color:var(--muted)">${acc}% (${fmt(d.attempts)} attempts)</span>
+      </div>
+      <div class="pbar"><div class="pbar-fill ${barColor}" style="width:${acc}%"></div></div>
+    </div>`;
+  });
+  el.innerHTML = rows.length ? rows.join('') : '<div style="color:var(--muted);font-size:13px">No data yet</div>';
+}
+
+function renderHardest() {
+  const hard = [...allQData]
+    .filter(q => (q.attempts||0) >= 3)
+    .map(q => ({ ...q, acc: (q.attempts||0) > 0 ? (q.correct||0)/(q.attempts||1) : 1 }))
+    .sort((a,b) => a.acc - b.acc)
+    .slice(0, 10);
+
+  const tbody = document.getElementById('hardestTable');
+  if (!hard.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Not enough data yet (need 3+ attempts per question)</td></tr>';
+    return;
+  }
+  tbody.innerHTML = hard.map(q => {
+    const acc = Math.round(q.acc * 100);
+    const typeLabel = q.qtype === 'multiple_choice' ? 'mc' : q.qtype === 'drag_drop' ? 'dd' : 'hs';
+    const badgeCls = typeLabel === 'mc' ? 'badge-mc' : typeLabel === 'hs' ? 'badge-hs' : 'badge-dd';
+    return `<tr>
+      <td class="mono" style="font-weight:500;color:var(--ink)">Q${q.qnum||q.id}</td>
+      <td><span class="badge ${badgeCls}">${typeLabel.toUpperCase()}</span></td>
+      <td class="mono">${fmt(q.attempts||0)}</td>
+      <td style="min-width:140px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="pbar" style="flex:1"><div class="pbar-fill pbar-red" style="width:${acc}%"></div></div>
+          <span class="mono" style="color:var(--red);min-width:30px">${acc}%</span>
+        </div>
+      </td>
+      <td style="font-size:11px;color:var(--red)">⚠ Most missed</td>
+    </tr>`;
+  }).join('');
+}
+
+window.sortTable = function(by) {
+  currentSort = by;
+  renderQuestions();
+  document.getElementById('sortAttempts').style.color = by==='attempts' ? 'var(--ink)' : '';
+  document.getElementById('sortAccuracy').style.color = by==='accuracy' ? 'var(--ink)' : '';
+};
+
+// ── THEME ─────────────────────────────────────────────────────
+window.toggleTheme = function() {
+  const d = document.documentElement;
+  d.setAttribute('data-theme', d.getAttribute('data-theme')==='dark'?'light':'dark');
+  const dark = d.getAttribute('data-theme')==='dark';
+  document.getElementById('thIco').innerHTML = dark
+    ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+    : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+};
+
+// ── UTILS ─────────────────────────────────────────────────────
+function fmt(n) { return (n||0).toLocaleString(); }
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showError(msg) {
+  document.getElementById('lastUpd').textContent = '⚠ ' + msg;
+  document.getElementById('lastUpd').style.color = 'var(--red)';
+}
+function timeAgo(date) {
+  const s = Math.floor((Date.now() - date) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  if (s < 86400) return Math.floor(s/3600) + 'h ago';
+  return Math.floor(s/86400) + 'd ago';
+}
+</script>
+</body>
+</html>
